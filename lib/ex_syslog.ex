@@ -11,7 +11,10 @@ defmodule ExSyslog do
   def init({__MODULE__, name}) do
     config = get_config(name, [])
 
-    :syslog.start()
+    case :syslog.start() do
+      {:error, {:already_started, _pid}} -> :ok
+      {:ok} -> :ok
+    end
     {:ok, log} = open_log(config)
 
     {:ok, %{name: name, log: log, config: config}}
@@ -56,6 +59,10 @@ defmodule ExSyslog do
       :syslog.log(log, priority, event)
     end
 
+    {:ok, state}
+  end
+
+  def handle_event(:flush, state) do
     {:ok, state}
   end
 
